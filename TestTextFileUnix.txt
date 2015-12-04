@@ -1,0 +1,42 @@
+
+
+
+
+this 
+is 
+the first 
+paragraph.1
+
+
+
+This is the second paragraph.2
+
+This is the third paragraph.        there are tabs here.3
+
+        This is the fourthparagraph (there are vim tabs at the begin:.
+        converted to spaces don't count).4
+
+
+        This is the fifth paragraph.5
+
+	This should be the sixt paragraph with real tab.6
+
+			
+			This is the seven paragraph with tabs at the begin and tabs in
+	between.7
+
+This is a very long line line
+ddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd that sould be the eight paragraph.8
+
+
+9
+
+Now, this is the 10th paragraph and a series of blank lines with spaces and
+spaces+tabs follow, but this should be the last.10
+
+
+		    
+		
+	
+	
+		

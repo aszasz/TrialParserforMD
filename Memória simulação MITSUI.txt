@@ -1,0 +1,29 @@
+Memória simulação MITSUI
+
+Projeto Rio Unificado:
+Banco de dados SuperVia
+Novos Cenários = scen 7 e scen 9 (apagou o velho) = cópias do cenário 11
+Altera headways em Parador Deodoro, Saracuruna
+
+File input: (module 2.21) Mitsui_Cen1_2016.in
+
+t lines
+m'R1415 ' t   2   8.00  37.33 'CENTRAL-BELFORD ROXO'      0    100      2
+m'R1416 ' t   2   8.00  37.33 'BELFORD ROXO-CENTRAL'      0    100      2
+m'R1419 ' t   8   8.00  32.40 'CENTRAL-SARACURUNA  '      0    100      2
+m'R1420 ' t   8   8.00  32.40 'SARACURUNA-CENTRAL  '      0    100      2
+m'R1403 ' t   2   7.50  34.73 'CENTRAL-DEODORO(PAR)'      0    100      2
+m'R1404 ' t   2   7.50  32.19 'DEODORO-CENTRAL(PAR)'      0    100      2
+
+Rodadas no banco da Supevia
+s=9
+~<imagemramal.mac SARAC 1.3 BROXO 1.11
+~<10x-rodaCol.mac mf13
+~<volax.mac
+~<voltr.mac
+
+s=7
+~<imagemramal.mac SARAC 1.10 BROXO 1.10
+~<10x-rodaCol.mac mf13
+~<volax.mac
+~<voltr.mac
