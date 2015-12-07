@@ -29,12 +29,12 @@ typedef SourcePosition = {
     line:Int,
     startPos:Int
 }
-typedef textStream={
+typedef TextStream={
     style: TextStyle,
     sourcepos:SourcePosition,
     content:String
 }
-typedef BookParagraph = Array<textStream>
+typedef BookParagraph = Array<TextStream>
 typedef BookAST = Array<BookParagraph>;
 
 class Brtparse
@@ -55,14 +55,24 @@ class Brtparse
         var fullstr = File.getContent(Sys.args()[0]);
         var ast = ParseIntoParagraphs (Sys.args()[1],fullstr);
         trace ("AST has  " + ast.length + " paragraphs. \n Enter paragraph to display (0 for exit)" );
+
+        //testing
         var input = Std.parseInt(Sys.stdin().readLine());
         while (input!=0){
-            trace ( ast[input-1].content + 
-                    "\n source=" 
-                    ast[input-1].source file 
-                    "\n \n Enter a new paragraph to display (0 for exit)"  );
+            var parcontent = "" ;
+            var firstline = Math.POSITIVE_INFINITY;
+            var lastline = Math.NEGATIVE_INFINITY;
+            for (par in ast[input-1]) {
+                parcontent = parcontent + par.content;
+                firstline = Math.min(firstline,par.sourcepos.line);
+                lastline = Math.max(lastline,par.sourcepos.line);
+            }
+            trace ("\n " + parcontent
+                 + "\n lines:" + firstline + "-" + lastline
+                 + "\n Enter new paragraph to display (0 for exit)" );
             input = Std.parseInt(Sys.stdin().readLine());
         }
+        
         File.saveContent(Sys.args()[1],Serializer.run(ast));
     }
 
@@ -72,21 +82,17 @@ class Brtparse
         var ast:BookAST = [];
         var count = 0;
         var firstParagraphLine = 0;
-        var parContent = "";
+        var curPar:BookParagraph = [];
         for (li in lines){
             count = count+1;
-            if (looksBlank(li)){ 
-                if (parContent!=""){
-                    ast.push ({sourcepos:{filename:fileName,line:firstParagraphLine+1},content:parContent});
-                    firstParagraphLine=0; 
-                    parContent="";
+            if (looksBlank(li)){
+                if (curPar.length>0){
+                    ast.push (curPar);
+                    curPar = [];
                 }
             } else {
-                if (firstParagraphLine==0) {
-                    firstParagraphLine = count;
-                    parContent = li;
-                } else
-                    parContent = parContent + " " + li;
+                if (curPar.length>0) curPar[curPar.length-1].content =  curPar[curPar.length-1].content + " ";
+                curPar.push({style:Normal,sourcepos:{filename:fileName,line:count,startPos:1},content:li});
             }
         }    
         return ast;
