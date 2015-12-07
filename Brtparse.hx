@@ -26,11 +26,11 @@ class Brtparse
         
         if (Sys.args().length!=2) {
             trace( 'wrong number of args: need two files');
-            display_usage_and_exit();
+            displayUsageAndExit();
         } 
         if (!FileSystem.exists(Sys.args()[0])){
             trace ('file not found:' + Sys.args()[0]);
-            display_usage_and_exit();
+            displayUsageAndExit();
         }
         trace('reading from  ${Sys.args()[0]} and writting to ${Sys.args()[1]}');
         var fullstr = File.getContent(Sys.args()[0]);
@@ -41,56 +41,42 @@ class Brtparse
             trace ( ast[input-1].content + "\n \n Enter a new paragraph to display (0 for exit)"  );
             input = Std.parseInt(Sys.stdin().readLine());
         }
-
         File.saveContent(Sys.args()[1],Serializer.run(ast));
     }
 
     static function ParseIntoParagraphs(fileName:String,fileContent:String):BookAST {
-        var lines = fileContent.split("\n");
-        trace ("file has " + lines.length + " lines!");
-        for (li in lines) {
-            trace ("line: " + li + " \n len: " + li.length);
-            trace ("lastcharcode: " + li.charCodeAt(li.length-1) );
-
-            if (li.charAt(li.length-1) == "\r") {
-                li = li.substring(0,li.length-1);
-                trace (" became: " + li + " \n len: " + li.length);
-                trace ("lastcharcode: " + li.charCodeAt(li.length-1) );
-            }
-        }
+        var noCrlines = fileContent.replace( "\r", "");
+        var lines = noCrlines.split("\n");
         var ast:BookAST = [];
         var count = 0;
         var firstParagraphLine = 0;
         var parContent = "";
         for (li in lines){
             count = count+1;
-            trace ("evaluating line: " + count + "="  + li + " \n len: " + li.length);
             if (looksBlank(li)){ 
-                trace ("it looks blank!");
                 if (parContent!=""){
-                    trace ("and parContent is to be placed in ast:" + parContent);
                     ast.push ({sourcepos:{filename:fileName,line:firstParagraphLine+1},content:parContent});
                     firstParagraphLine=0; 
                     parContent="";
                 }
             } else {
-                trace ("it does not look blank!");
-                if (firstParagraphLine==0) firstParagraphLine = count;
-                parContent = parContent + li;
-                trace ("parContent now is:" + parContent);
+                if (firstParagraphLine==0) {
+                    firstParagraphLine = count;
+                    parContent = li;
+                } else
+                    parContent = parContent + " " + li;
             }
         }    
         return ast;
     }
     static function looksBlank(line:String):Bool{
-        for (charpos in 0...line.length) {
+        for (charpos in 0...line.length) 
             if (!line.isSpace(charpos)) return false;
-        }
         return true;
     }
-    static function display_usage_and_exit(){
+    static function displayUsageAndExit(?exitStatus=1){
         trace(' Use: neko brtparse.n inputfilename outputfilename');
-        Sys.exit(1);
+        Sys.exit(exitStatus);
     }
 
 }
