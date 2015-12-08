@@ -9,6 +9,7 @@ the first
 paragraph.1
 
 
+\pipein{assets/addtext.txt}  
 
 This is the second paragraph.2
 % now this row is a comment that should not appear
@@ -18,6 +19,9 @@ This is the third paragraph.        there are tabs here.3
         This is the fourthparagraph (there are vim tabs at the begin:.
         converted to spaces don't count).4
 
+We are counting down among three files in one line: Ten Nine
+\pipein{assets/addadd.txt}  
+Two One. DONE
 
         This is the fifth paragraph.5
 
@@ -30,6 +34,7 @@ This is the third paragraph.        there are tabs here.3
 This is a very long line line, now gets a coment in the middle 
 %dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd
 ddddddddddddddddddddddddddddddddddddddd that sould be the eight paragraph.8
+
 
 
 9
