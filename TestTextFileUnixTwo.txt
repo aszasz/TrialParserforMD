@@ -1,0 +1,46 @@
+
+
+
+
+this 
+is 
+the first 
+% another comment in the middle of the paragraph!
+paragraph.1
+
+
+
+This is the second paragraph.2
+% now this row is a comment that should not appear
+
+This is the third paragraph.        there are tabs here.3
+
+        This is the fourthparagraph (there are vim tabs at the begin:.
+        converted to spaces don't count).4
+
+
+        This is the fifth paragraph.5
+
+	This should be the sixt paragraph with real tab.6
+
+			
+			This is the seven paragraph with tabs at the begin and tabs in
+	between.7
+\pipein{Memória simulação MITSUI.txt}
+This is a very long line line, now gets a coment in the middle 
+%dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd
+ddddddddddddddddddddddddddddddddddddddd that sould be the eight paragraph.8
+
+
+9
+
+Now, this is the 10th paragraph The 11th paragraph follows without enter at 
+the end there is the include now... .10
+
+
+\pipein{TestTextFileUnix.txt}		    
+	
+	
+	
+
+This is the last 11 paragraph ending without a return.11
