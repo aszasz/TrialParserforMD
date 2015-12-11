@@ -31,7 +31,6 @@ typedef CommandDef = {
 }
 
 typedef ParseSource = {
-    caller: String,
     filename: String,
     line:Null<Int>,
 }
@@ -39,39 +38,6 @@ typedef ParseSource = {
 typedef TextChunk = {
     textStyle:TextStyle,
     textContent:String,
-//    parseStartPos:Int,
-//    parseEndPos:Int
-}
-
-enum BookDivisionType {
-   Book;
-   Volume;
-   Chapter;
-   Section;
-   SubSection;
-   SubSubSection;
-   SubSubSectionItem;
-   SubSubSectionSubItem;
-}
-
-enum BookComponentType {
-    Paragraph;
-    Figure;
-    Table;
-    Equation;
-}
-
-enum BookElementType {
-    DivType(name:BookDivisionType, numberedAfter:BookDivisionType);
-    CompType(name:BookComponentType, numberedAfter:BookDivisionType);
-}
-
-typedef BookElementsCommon = {
-//   level is implicit   
-    type: BookElementType,
-    name: Null<String>,
-    isNumbered: Bool,
-    number:Null<Int>,
     source: ParseSource
 }
 
@@ -93,21 +59,19 @@ typedef TableColumn = Array<TextChunk>
 typedef TableLine = Array<TableColumn>
 
 enum BookElement {
-    BookDiv(base:BookElementsCommon, content:Array<BookElement>);
-    BookFigure(base:BookElementsCommon, content:FigureContents);
-    BookTable(base:BookElementsCommon, content:Array<TableLine>);
-    BookEquation(base:BookElementsCommon, content:Array<TextChunk>);
-    BookParagraph(base:BookElementsCommon, content:Array<TextChunk>);
+    BookDiv(name:Null<String>, content:Array<BookElement>);
+    BookFigure(name:Null<String>, content:FigureContents);
+    BookTable(name:Null<String>, content:Array<TableLine>);
+    BookEquation(name:Null<String>, content:Array<TextChunk>);
+    BookParagraph(name:Null<String>, content:Array<TextChunk>);
 }
 
 class Brtparse
 {
-    static var theBRTPGBookType  = DivType(Book, Book);
-    static var BRTPGStardardParagraphType = CompType(Paragraph, Book);
+       static function main() {
 
-    static function main() {
-
-        haxe.Log.trace = function (msg:String, ?pos:haxe.PosInfos) Sys.stderr().writeString('${pos.fileName}:${pos.lineNumber}: $msg\n');
+        haxe.Log.trace = function (msg:String, ?pos:haxe.PosInfos)
+            Sys.stderr().writeString('${pos.fileName}:${pos.lineNumber}: $msg\n');
         
         if (Sys.args().length!=2) {
             trace( 'wrong number of args: need two files');
@@ -118,34 +82,31 @@ class Brtparse
             displayUsageAndExit();
         }
         trace('reading from  ${Sys.args()[0]} and writting to ${Sys.args()[1]}');
-        var ast = ParseIntoParagraphs (Sys.args()[0],"BRTParser");
+        var ast = ParseIntoParagraphs (Sys.args()[0]);
         trace ("AST has  " + ast.length + " paragraphs. \n Enter paragraph to display (0 for exit)" );
 
-        //testing
+        //testing Do I need switch here?
         var input = Std.parseInt(Sys.stdin().readLine());
         while (input!=0){
             var parcontent = "" ;
             var firstline = Math.POSITIVE_INFINITY;
             var lastline = Math.NEGATIVE_INFINITY;
-            for (par in ast.content[input-1]) {
+            for (par in ast[input-1]) {
                 parcontent = parcontent + par.textContent;
-                line =  par.base.source.line;
-//                firstline = Math.min(firstline, par.base.source.line);
-//                lastline = Math.max(lastline, par.base.source.line);
+                firstline = Math.min(firstline, par.source.line);
+                lastline = Math.max(lastline, par.source.line);
             }
             trace ("\n " + parcontent
-                 + "\n startline:" + line 
-//                 + "\n lines:" + firstline + "-" + lastline
+                 + "\n lines:" + firstline + "-" + lastline
                  + "\n Enter new paragraph to display (0 for exit)" );
             input = Std.parseInt(Sys.stdin().readLine());
         }
-        
-        File.saveContent(Sys.args()[1],Serializer.run(ast));
+//        File.saveContent(Sys.args()[1],Serializer.run(ast));
     }
 
     // A paragraph is text between aparently empty lines (only tabs spaces and CharCodes between 9 and 13)
     // Lines starting with % are ignored 
-    static function ParseIntoParagraphs(filePath:String, calledFrom:String, ?curPar:BookElement):BookElement 
+    static function ParseIntoParagraphs(filePath:String):Array<Array<TextChunk>>
     {
         var pipeinCommand = {description:"Change Input to given file", nArgs:1, matchPattern:~/^\\pipein\{(.+)\}$/i};
         var filePathSplit = filePath.split("/");
@@ -155,51 +116,45 @@ class Brtparse
         var noCrlines = fullstr.replace( "\r", "");
         var lines = noCrlines.split("\n");
         var count = 0;
-        var ast:BookElement = BookDiv(  {type:DivType(Book, Book),
-                                         name:"BRTPG", isNumbered:false, number:null,
-                                         source:{caller:calledFrom, filename:fileName, line:count}}
-                                         , []  );
-        if (curPar == null) curPar = BookParagraph( {type:CompType(Paragraph, Book),
-                                                    name:null, isNumbered:false, number:null,
-                                                    source:{caller:calledFrom, filename:fileName, line:count}},
-                                                    []  );
+        var ast:Array<Array<TextChunk>> = [];
+        var curPar:Array<TextChunk> = []; 
         for (li in lines){
             count = count+1;
             if (li.startsWith("%")) continue;
             if (looksBlank(li)){
-                if (curPar.content.length>0){
-                    ast.content.push (curPar);
-                    curPar.content = [];
+                if (curPar.length>0){
+                    ast.push (curPar);
+                    curPar = [];
                 }
             } else {
-                if (curPar.content.length>0) {
-                        curPar[curPar.content.length-1].textContent =  curPar[curPar.length-1].content.textContent + " ";
-//                        curPar[curPar.content.length-1].parseEndPos =  curPar[curPar.length-1].content.parseEndPos + 1;
+                if (curPar.length>0) {
+                    curPar[curPar.length-1].textContent =  curPar[curPar.length-1].textContent + " ";
                 }
                 if (!li.startsWith("\\pipein")) {
-                    curPar.content.push({textStyle:Normal, textContent:li});//,parseStartPos:1, parseEndPos:li.length)} ;
-//                    curPar.base    :{caller:calledFrom, filename:fileName, line:count, startPos:1}, content:li});
+                    curPar.push({textStyle:Normal, textContent:li, source:{filename:fileName, line:count} });
                 } else {
                     var pipeInFileName:String = "";
-                    if (pipeinCommand.matchPattern.match(li.trim)) 
+                    if (pipeinCommand.matchPattern.match(li.trim())) 
                         pipeInFileName = pipeinCommand.matchPattern.matched(1);
                     else {
-                        trace ('argument to \\pipein do not match in line $count of file $fileName called from: $calledFrom \n -->$li' );
+                        trace ('argument to \\pipein do not match in line $count of file $fileName\n -->$li' );
                         Sys.exit(1);
                     }
-                    trace ('fileName = $fileName');
-                    trace ('fileDir = $fileDir');
                     var prevWorkDir = Sys.getCwd();
                     if (fileDir != "") Sys.setCwd(fileDir);
                     if (!FileSystem.exists(pipeInFileName)){
-                        trace ('file to \\pipein not found: $pipeInFileName (in line $count of file $fileName called from: $calledFrom)' );
+                        trace ('file to \\pipein not found: $pipeInFileName (in line $count of file $fileName)' );
                         Sys.exit(1);
                     }
-                    
-                    var astsub = ParseIntoParagraphs (pipeInFileName,'$calledFrom ==> $fileName: line $count', curPar);
-                    curPar = astsub.content.pop();
-                    for (subpar in astsub) ast.content.push (subpar);
+                    trace ('\\pipeing: $pipeInFileName (from line $count of file $fileName)' );
+                    var astsub = ParseIntoParagraphs (pipeInFileName);
+                    if (curPar.length>0 && astsub.length>0) {
+                        for (texchun in curPar) astsub[0].unshift(texchun);
+                    }
+                    curPar = astsub.pop();
+                    for (subpar in astsub) ast.push(subpar);
                     Sys.setCwd(prevWorkDir);
+                    trace ('DONE \\pipeing: $pipeInFileName (from line $count of file $fileName)' );
                 }
             }
         }    
