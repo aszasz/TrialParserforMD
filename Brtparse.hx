@@ -83,7 +83,9 @@ class Brtparse
         }
         trace('reading from  ${Sys.args()[0]} and writting to ${Sys.args()[1]}');
         var ast = ParseIntoParagraphs (Sys.args()[0]);
-        trace ("AST has  " + ast.length + " paragraphs. \n Enter paragraph to display (0 for exit)" );
+        //ParseIntoDivs(ast);
+
+        trace ("Done spliting file in basic paragraphs AST has  " + ast.length + " paragraphs. \n Enter paragraph to display (0 for exit)" );
 
         //testing Do I need switch here?
         var input = Std.parseInt(Sys.stdin().readLine());
@@ -98,20 +100,21 @@ class Brtparse
             }
             trace ("\n " + parcontent
                  + "\n lines:" + firstline + "-" + lastline
-                 + "\n Enter new paragraph to display (0 for exit)" );
+                 + "\n Enter new paragraph to display (0 for saveContent)" );
             input = Std.parseInt(Sys.stdin().readLine());
         }
-//        File.saveContent(Sys.args()[1],Serializer.run(ast));
+        File.saveContent(Sys.args()[1],Serializer.run(ast));
     }
 
     // A paragraph is text between aparently empty lines (only tabs spaces and CharCodes between 9 and 13)
     // Lines starting with % are ignored 
-    static function ParseIntoParagraphs(filePath:String):Array<Array<TextChunk>>
+    public static function ParseIntoParagraphs(filePath:String):Array<Array<TextChunk>>
     {
         var pipeinCommand = {description:"Change Input to given file", nArgs:1, matchPattern:~/^\\pipein\{(.+)\}$/i};
         var filePathSplit = filePath.split("/");
         var fileName = filePathSplit.pop();
         var fileDir = filePathSplit.join("/");
+        trace ('Parsing file $filePath into paragraphs');
         var fullstr = File.getContent(filePath);
         var noCrlines = fullstr.replace( "\r", "");
         var lines = noCrlines.split("\n");
@@ -146,7 +149,7 @@ class Brtparse
                         trace ('file to \\pipein not found: $pipeInFileName (in line $count of file $fileName)' );
                         Sys.exit(1);
                     }
-                    trace ('\\pipeing: $pipeInFileName (from line $count of file $fileName)' );
+                    trace ('Piping: $pipeInFileName (from line $count of file $fileName)' );
                     var astsub = ParseIntoParagraphs (pipeInFileName);
                     if (curPar.length>0 && astsub.length>0) {
                         for (texchun in curPar) astsub[0].unshift(texchun);
@@ -154,10 +157,11 @@ class Brtparse
                     curPar = astsub.pop();
                     for (subpar in astsub) ast.push(subpar);
                     Sys.setCwd(prevWorkDir);
-                    trace ('DONE \\pipeing: $pipeInFileName (from line $count of file $fileName)' );
+                    trace ('DONE piping: $pipeInFileName' );
                 }
             }
-        }    
+        }  
+        trace ('DONE parsing file = $filePath into Paragraphs');
         return ast;
     }
   

@@ -1,0 +1,43 @@
+
+
+
+
+this 
+is 
+the first 
+% a comment in the middle of the paragraph!
+paragraph.1
+
+
+\pipein{assets/TestPIPEINinside.txt}  
+
+This was the second paragraph. But with two inserted in the include it should became. 4
+% now this row is a comment that should not appear
+
+
+We are counting down among three files in one line: Ten Nine
+\pipein{assets/TestPIPEINtwo.txt}  
+Two One. DONE, (yes, there is an extra space between 3 and 2) and this should end the fifth paragraph.5
+
+	This should be the sixt paragraph with real tab.6
+
+			
+			This is the seventh paragraph with tabs at the begin and tabs in
+	between. and bellow we have a Windows Report with its 6 paragraphs:
+
+\pipein{TesteWindowsGeneratedText.inp}
+
+This is a very long line line, now gets a coment in the middle 
+%dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd
+ddddddddddddddddddddddddddddddddddddddd that sould be the paragraph 14
+
+
+
+15
+
+Now, this is the 16th paragraph to say that 17th paragraph follows without enter at 
+the end.
+
+
+
+This is the 17th and last  paragraph ending without a return.17
