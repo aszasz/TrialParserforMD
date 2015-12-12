@@ -9,14 +9,14 @@ import utest.Assert;
 
 **/
 class UTest {
-	function testParseIntoParagraphArraySerializedFiles()
+	function testParseIntoVBlockArraySerializedFiles()
 	{
-		trace('running ParseIntoParagraphs file based tests:');
+		trace('running ParseIntoVBlock file based tests:');
 		for (f in sys.FileSystem.readDirectory(".")) {
 			if (!sys.FileSystem.isDirectory(f) && StringTools.endsWith(f, ".inp") && sys.FileSystem.exists(StringTools.replace(f, ".inp", ".out"))) {
 				trace('running test $f');
 				var exp = sys.io.File.getContent(StringTools.replace(f, ".inp", ".out"));
-				var got = haxe.Serializer.run(Brtparse.ParseIntoParagraphs(f));
+				var got = haxe.Serializer.run(Brtparse.ParseIntoVBlocks(f));
 				Assert.equals(exp, got);
 			}
 		}
