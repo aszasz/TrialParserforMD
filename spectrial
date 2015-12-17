@@ -1,0 +1,325 @@
+#BRTPG FLAVOURED MARKDOWN SPECIFICATION TRIAL
+
+This document describes how the source files are recognized 
+and processed by the parser of the BRTPG website to propose
+changes in the book.
+
+
+## Overview
+
+ROBRT is the continuous integration tool created to allow collaboration
+in the production of the BRTPG using git, a free distributed version control system
+and github, a hosting web service (free for open-source projects) to coordinated 
+distribution tool. ROBRT source-code itself is available at github too.
+
+Ideally, a collaborator must download and install git and create an account in git hub to
+fork the project, edit the content of source files and submit changes.
+Those changes will be processed and (if the process is sucessfull) displayed
+as a webpage with the current guide style at a given temporary address,
+so the collaborator can view the result.
+
+The source code uses a format that can be described as a 'flavoured markdown with commands'
+
+Markdown is easy way to write plain text files, that can provide information about the content
+without polluting the source heavilly.
+
+The writer must centraly worry about the content and its semantic meaning, and not about
+formatting the text. Format decisions are let to the publisher and can be changed anytime in 
+a uniform way througout the book.
+
+Markdown uses special caracters, such as \, #, : and @, to indicate the semantic meaning of a given flow
+of text. This has the down-side that a writer willing to use some special characters at certain text positions
+will have use an alternative way (escaped caracters discussed bellow).
+
+To allow dynamic cross references (numbering and links) that are harder to break when things change place, one must use commands, as using marks for this would not improve readability. This useful commands can mostly be thinked of as text replacement tools.
+
+Additionally, to please programmers and facilitate conversion from other formats in a uniform way, all markdown sintaxe has equivalent commands that can be used as replacements, doing so usually makes the source harder to read. But understanding the extended command formats can be useful for the writer to understand the markdown sintaxe and gain confidence about how to using the markdown.
+
+Commands may workout off the specifications given here, when there is no ambiguity about the intention of its use, but one shall not rely on that.
+
+
+## Vertical blocks
+
+The ROBRT flavoured markdown does not care
+if a text is split
+in several lines, moving the text to the following line
+has the same effect as a space in the same line.
+
+The book elements -- such as a paragraph, a list, a table or a figure -- should be split by a blank line (or more if the writer prefer to improve the readability of the source). The content between two blank lines is a vertical block. A line with only spaces and/or tabs is considered a blank line for this matter.
+
+To control lines within a paragraph, a list should be used,
+if two paragraphs within the same section requires some distance in order to
+separate the ideas (or "a pause") a vertical space mark (or command) between two paragraphs should be used.
+
+In practice a writer can think of the vertical block as a continuous text line 
+with "returns" placed as its convenience to improve readability.
+
+Most markdown sintaxe is required at the begining of a vertical block to inform its content and usually informs the nature of the content of till the end of the vertical block. No commands or marks at the beginning usually indicates a regular paragraph (that might be affected by a previous command or mark that acts over several vertical blocks) 
+
+
+## Horizontal blocks and Spacing
+
+Vertical blocks in horizontal blocks. Thinking of a vertical block as a continuous line, the horizontal blocks are the words. Spaces, tabs, new lines are the regular delimiters of vertical blocks, and having two of them usually  makes no difference in how the block will be processed, so one space between words   has  the   same effect   as several spaces and there is no harm in letting spaces at the end of a line (two new lines will end the vertical block though).
+
+Special characters (such as *,_,{, },=,: and @) and sequencies of special characters (such as //,**,/*,*/,:::) are also horizontal blocks delimiters if the context dictated by previous commands along the vertical block requires that. A special character or sequence may be required in a given context to split a vertical block, but having one or several spaces before or after a required delimiter has no effect. The writer should choose what improves readability of the source.
+
+
+## Hidden vertical blocks
+
+Alltought the practice should be avoided, one can use commands that replaces markdown flags in the middle of a line (without separating it by blank lines). Doing that once might create up to three vertical blocks inside of what would visually appear as being only one. As a source editor, one must be aware of the possibility.
+
+
+## Escaped characters
+
+If one wants to use in the book, a special character that writen in the source text file would be interpreted as a markdown character (let us say, for instance, start a regular paragraph with #), then one should use the 'escaped #', by using the sequence \# instead. A back slash must always be escaped (by \\) and the other characters that may require back-slash escaping are _*@{}[]=/: besides space, which, besides in the rare case discussed at the end of this section, will have exactly the same effect as space alone.
+
+Despite being accepted everywhere, there is no need to use them where they can not be interpreted with special meaning. For example there is no need to escape a # in the middle of a regular paragraph, only if it is to be used as the first character, * only needs to be escaped if in the beginning or in the end of a word, because separated by spaces it has no special meaning for the markdown.
+
+If one wants to write in the book a text sequence that coincides with a markdown flag or a command  (as /* for instance), on needs only to escape one of the characters.
+
+If one tries to escape a non-special character, it will be interpreted as an attempt to write a non-existent command.
+As commands are accepted everywhere in the source, the back-slash must always be escaped as \\. This is relevant toprovide paths to files as command arguments using Windows directory separator. The universal style separator / can be used without need to escape on this cases.
+
+When providing file paths as arguments to commands the use of the escaped space is necessary to provide file paths that include spaces. Creating directories and files without using spaces and new lines is less error prone though.
+
+
+
+## Command basics
+
+Commands start with the back-slash character followed  and receive arguments within brackets (square brackets for optional
+arguments) like this
+
+\commandname{first-mandatory-argument}{
+
+
+
+
+
+where hints easy to read sintaxe to write
+
+
+## Comments
+
+Comments will not appear in the book, they shall be used to explain
+subjacent reasons or intentions of the text
+
+\comment{This is a comment. Will do nothing}
+// this is a comment, it will span till the end of the line
+/* this is a comment, it will span till a */
+-->COMMENT TAKES PRECEDENCE OVER COMMANDS
+
+
+
+\label{a-label,other-label}
+or
+::: a-label ::: another-label
+or
+This is a weird :::a-label label
+
+-->Creates an anchor outside book structure (not in the index) to be referenced from other places
+
+\partitle{display}{label}
+-->Creates a paragraph with vertical emphasis that shall not be split from the paragraph that follows it,
+it will not be numbered nor referred in the book index.
+
+***Check List :::check-list
+
+*** 
+or 
+\vspace
+-->Adds vertical pause... breathe space. It is a way of split subjects within the same book division unit
+
+BOOK_DIVISIONS:
+### Pedestrian-only phase
+[\label{ped-time,walking-phase,total-red-time}]
+[\notnumbered]
+-->Creates a book division of level given by the number of #, it creates a label with the title;
+split by spaces (on this case:pedestrian-only-phase) besides optional given labels. If optional 
+\notnumbered command is given, the division wont be numbered, but will appear in the index.
+
+
+
+###* Pedestrian-only phase
+:::ped-time :::walking-phase :::total-red-time
+
+Here is something ::important-notice important
+
+Here is something :::important-notice important
+
+Here is something important-notice important
+
+Here is something \label{important-notice} important
+
+Here is something :label{important-notice} important
+
+\fig :path=assets/img.png :copyright={Public Domain} :caption={Um teste} :label=fig-33 
+
+Um casa
+\fig[]{}{}{}
+muito bonita
+\fig[]{}{}{}
+
+\fig[fig-33]
+{Um teste}
+{Public Domain}
+{assets/img.png}
+
+#FFF Tudo que estiver [assets/img.jpg] aqui é caption :::label-com-coisa @Tudo que vem depois do arroba é autor
+
+
+\fig[congested-intersection]
+{The introduction of BRT and design changes to poorly controlled and congested
+intersections often leads to efficiency improvements for both public transport
+vehicles and mixed traffic.}
+{Photo by Lloyd Wright.}
+[medium]
+{img/congested-intersection.jpg}
+
+\fig
+:caption={The introduction of BRT and design changes to poorly controlled and congested
+intersections often leads to efficiency improvements for both public transport
+vehicles and mixed traffic.}
+:label={congested-intersection}
+:copyright={Photo by Lloyd Wright.}
+:path={img/congested-intersection.jpg}
+
+#FIG:medium#
+The introduction of BRT and design changes to poorly controlled and congested
+intersections often leads to efficiency improvements for both public transport
+vehicles and mixed traffic.
+@Photo by Lloyd Wright.
+{img/congested-intersection.jpg}
+:::congested-intersection
+
+#TAB#
+Signal delay :::example-cross
+| Red light time  (seconds) | Green light time  (seconds) | Average signal delay (TF) (seconds) | Random queuing delay (TQs) (seconds) | Total signal delay (TS) (seconds) | Demand to signal capacity level (XSignal)
+|-----------|-----|----------------|-----------------|----------------|------------
+| 0  | 80 | 0.00  | 0.00   | 0.00   | 0.28
+| 10 | 70 | 0.87  | 0.00   | 0.87   | 0.32
+| 20 | 60 | 3.46  | 0.00   | 3.46   | 0.37
+| 30 | 50 | 7.79  | 0.00   | 7.79   | 0.44
+| 36 | 54 | 11.22 | 0.18   | 11.40  | 0.51
+| 40 | 40 | 13.85 | 2.25   | 16.10  | 0.56
+
+#EQ#
+Speed
+{V_segment = {D_segment} \over {Time_segment}  \dlarrow  Time_segment = {D_segment} \over {V_segment}}
+:::speed-eq
+
+#EQ:fake#
+Speed
+{img/eq-speed-definition.png}
+:::speed-eq
+
+![congested-intersection](img/congested-intersection.jpg
+"The introduction of BRT and design changes to poorly controlled and congested
+intersections often leads to efficiency improvements for both public transport
+vehicles and mixed traffic.  Photo by Lloyd Wright.")
+
+
+
+\fig fig-33 Um teste Public Domain assets/img.png
+
+
+
+
+
+\table Display escrito a vontade :::label 
+
+\eq
+
+
+\label
+
+
+
+\reftolabel{display-text}{label-to-refer}
+(IN PRINT THIS WOULD write "(page number)"
+
+\partitlename{label}
+
+\tablename{label} = internally equal to \partitlename{table-label}
+\tablenum{label} 
+\fignum{label}
+\figname{label}
+\eqnum{label}
+\eqname{label}
+\boxnum{label}
+\boxname{label}
+
+\divlevelname{label}
+\divnum{label}
+\divname{label}
+
+
+
+BOX:
+[[[Station saturation with multiple bays
+
+
+
+]]]
+
+
+\topartitle{lable}
+
+\linktolabelwithitstitle
+
+
+:::label,other-label
+
+\div{level}{display-title}{lable,other-label}
+\div{level}{display-title:::lable,other-label}
+\reldiv{level}{display-title}{lable,other-lable}
+\relativediv{level}{display-title}{lable,other-lable}
+\nonumberdiv{level}{display-title}{label,other-lable}
+\nonumberrelativediv{level}{display-title}{label,other-lable}
+
+
+\chapter{display-title}{lable, other-label}=\div{1}{display-title}{lable, other-label}
+\section{display-title}{lable, other-label}=\div{2}{display-title}{lable, other-label}
+\subsection{display-title}{lable, other-label}=\div{3}{display-title}{lable, other-label}
+\subsubsection{display-title}{lable, other-label}=\div{4}{display-title}{lable, other-label}
+\subsubsectionitem{display-title}{lable, other-label}=\div{5}{display-title}{lable, other-label}
+\subsubsectionsubitem{display-title}{lable, other label}=\div{6}{display-title}{lable, other-label}
+
+\box{display-title}{label, other lable}
+\endbox
+
+[[[display-title:::label, other lable
+]]]
+
+\quote{quote Text}{author info Text}
+
+> quote text as it may be until last @ author info Text
+
+
+\vbreak
+
+
+
+\table{display-title}{label}=label{table-lable}
+
+\equation{display-title}{label}
+
+
+{display-title}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
