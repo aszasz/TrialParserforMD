@@ -74,8 +74,15 @@ enum VBlockType {
     BoxHeader;
     BoxClosing;
     IgnoreBlockHeader;
+    CommentBlockHeader;
     CodeBlockHeader;
-    Element;
+    Figure;
+    Table;
+    Equation;
+    List;
+    ParTitle;
+    VSpace;
+
 }
 
 enum BookElement {
@@ -114,7 +121,6 @@ class Brtparse
     public static function createBookDiv (beca: BECA, level:Int, isBox:Bool, vBlocks:Array<VBlock>):BookElement
     {
         if (label==null) label=Label
-        var beca:BECA = { 
         var content:Array<BookElements>=[];
         while (vBlocks.length>0) {
             vBlock =  vBlocks.shift();
@@ -138,13 +144,22 @@ class Brtparse
                     return Box(beca,content)
                 case IgnoreBlockHeader:
                     getCodeBlockEnd(vBlock, vBlocks);
+                case CommentBlockHeader:
+                    getCommentBlockEnd(vBlock, vBlocks);
                 case CodeBlockHeader:
                     content.push getCodeBlockEnd(vBlock, vBlocks);
-                case Element:
+                default:
                     content.push parseElement(vBlock);
-
- 
             }
+            if (content.length == 0) error('div ${beca.name} has no content.  ${displayBlockInfo(beca.source)}');
+            return Div(beca,content);
+        }
+    }
+
+    public static function getVBlockType(vBlock:VBlock):VBlockType 
+    {
+        
+    }
 
 
             if (vBlock[0].textContent.startsWith() == "#" ){
