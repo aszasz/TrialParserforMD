@@ -153,15 +153,35 @@ before it, if implementation is working fine.
 
 *** mark down block comment: 
 
-Using the markdown pair /* and */ as follows:
+Using the markdown pair `/*` and `*/` as follows:
+
+- Both symbols must be in the same vertical block;
+- or both symbols must be alone in a line:
+
+     . `/*` starting a vertical block; and
+     . `*/` in the end of a vertical block 
 
 \start-code-block{comment-example}
-This text is to be published /* this is a comment,
 
-as an example to show it works 
-even if I insert a new vertical block
+This is an example of a case that would generate an error  /* this is a comment,
+this is the continuation of a comment as expected
 
-will span till a \*/ and this text is after a comment.
+If this was accepted this text here in the middle would be a comment, but one 
+looking at the source could hardly notice that! 
+
+and even this could go unnoticed */ and this text is after a comment.
+
+/*
+If one wants to write a comment that spans over several 
+vertical blocks, explaining the reasoning behind a given
+decision or explaining how one thinks something should be
+further improved.
+
+Using this format instead of the above will not generate an
+error and it is easy to see where the comment ends
+*/
+
+
 \end-code-block{comment-example}
 
 
@@ -381,12 +401,12 @@ The following code block presents valid figure inputs:
 
 \start-code-block{photo-ex}
 
-#FIG# Motorcycles in Jakarta. @ Photo by John Ernst. [img/queue-fly-jkt.jpg]
+#FIG# Motorcycles in Jakarta. @ Photo by John Ernst. {img/queue-fly-jkt.jpg}
 
-#FIG# Motorcycles [img/queue-fly-jkt.jpg] in Jakarta.@Photo by John Ernst. 
+#FIG# Motorcycles {img/queue-fly-jkt.jpg} in Jakarta.@Photo by John Ernst. 
 
 #FIG:medium#
-[img/congested-intersection.jpg]
+{img/congested-intersection.jpg}
 The introduction of BRT and design changes to poorly controlled and congested
 intersections often leads to efficiency improvements for both public transport
 vehicles and mixed traffic.
@@ -397,7 +417,7 @@ vehicles and mixed traffic.
 
 The output of the last is shown in figure \fignum{congested-intersection}
 
-[img/congested-intersection.jpg]
+{img/congested-intersection.jpg}
 The introduction of BRT and design changes to poorly controlled and congested
 intersections often leads to efficiency improvements for both public transport
 vehicles and mixed traffic.
@@ -436,10 +456,10 @@ Signal delay :::example-cross
 | 36 | 54 | 11.22 | 0.18   | 11.40  | 0.51
 | 40 | 40 | 13.85 | 2.25   | 16.10  | 0.56
 
-#TAB:fake:large
+#TAB:fake:large#
 Example of fleet required for different vehicle sizes
 ::: required-fleet
-[assets/fleet-x-size-example.png]
+{assets/fleet-x-size-example.png}
 
 \end-code-block{tab-ex}
 
@@ -457,84 +477,86 @@ Signal delay :::example-cross
 | 40 | 40 | 13.85 | 2.25   | 16.10  | 0.56
 
 
-
 ## Emphasized and highlighted text
 
-In the source file wherever text to be displayed is expected, two levels of emphasis are allowed, independently or one within the other, this is indicated by the special character \* or doubled \**. Emphasis shall be used when the
+In the source file wherever text to be displayed is expected, two levels of emphasis are allowed, independently or one within the other, this is indicated by the special character \* or doubled \** for opening and closing. Emphasis shall be used when the
 
-Highlighted text is equally accepted in this places, and it will be indicated by the command \highlight{Text to be highlighted inside brackets}
+Highlighted text is equally accepted in this places, and it will be indicated by the command \highlight{Text to be highlighted inside brackets} 
 
 Emphasis should be used to call reader attention when reading that sentence, while highlighting should be used as a form to attract readers attention to the text before he focus on the paragraph as a visual clue about an essential content in the page.
 
-## In-line math
+If the horizontal block where emphasis was started is ended before emphasis is closed before emphasis is finished, an error will be thrown.
 
-## Math block
+Example:
+
+## Math
+
+### in-line math
+
+Mathematical elements can be inserted wherever text to be displayed is expected as well as emphasis To be properly rendered, special notation shall be used (currently only TeX notation). An in-line mathematical expression shall bebe indicated starting and ending with the $ symbol.
+
+### Math block
+
+
+Example:
+
+```
+
+When $(a \ne 0\)$, there are two solutions to $ ax^2 + bx + c = 0$ and they are
+
+$$$ x = {-b \pm \sqrt{b^2-4ac} \over 2a}.
+
+```
+
 
 ## Equations
 
+Equations differ from math blocks, as they must be numbered and optionally named or labeled (but one of the two options is required) to be referenced along the book.
+
+Similarly to tables and figures, equations have to be isolated and contained in one vertical block, as in the example bellow, started by #EQ#, elements can be given in any order.
+
+```
+
 #EQ#
 Speed
-$V_segment = {D_segment} \over {Time_segment}  \dlarrow  Time_segment = {D_segment} \over {V_segment}$
+$$$V_segment = {D_segment} \over {Time_segment}  \dlarrow  Time_segment = {D_segment} \over {V_segment}
 :::speed-eq
 
-#EQ:fake#
+```
+"Fake" equations are (for now) accepted too, as bellow:
+
+```
+#EQ:fake:small#
 Speed
-[img/eq-speed-definition.png]
+{img/eq-speed-definition.png}
 :::speed-eq
+```
 
-![congested-intersection](img/congested-intersection.jpg
-"The introduction of BRT and design changes to poorly controlled and congested
-intersections often leads to efficiency improvements for both public transport
-vehicles and mixed traffic.  Photo by Lloyd Wright.")
+## Reference commands
 
-
-
-\fig fig-33 Um teste Public Domain assets/img.png
-
-
-
-
-
-\table Display escrito a vontade :::label 
-
-\eq
-
-
-\label
-
-
-
-\reftolabel{display-text}{label-to-refer}
+\ref-to-label{display-text}{label-to-refer}
 (IN PRINT THIS WOULD write "(page number)"
 
-\partitlename{label}
+[display text]{reference}
 
-\tablename{label} = internally equal to \partitlename{table-label}
-\tablenum{label} 
-\fignum{label}
-\figname{label}
-\eqnum{label}
-\eqname{label}
-\boxnum{label}
-\boxname{label}
+\divnum{div-label-to-refer} will fail if not numbered div
+\boxnum{box-label-to-refer}
+\fignum{figure-label-to-refer}
+\tabnum{table-label-to-refer}
+\eqnum{equation-label-to-refer} 
 
-\divlevelname{label}
-\divnum{label}
-\divname{label}
+\divname{div-label-to-refer}
+\boxname{box-label-to-refer}
+\parname{par-title-label-to-refer}
+\tabname{table-label-to-refer}
+\eqname{equation-label-to-refer} will fail if not named equation
 
+\fulldivref
+\fullboxref
+\fullparref
+\fulltabref
+\fulleqref
 
-
-BOX:
-[[[Station saturation with multiple bays
-
-
-
-]]]
-
-
-\topartitle{lable}
-
-\linktolabelwithitstitle
 
 
 :::label,other-label

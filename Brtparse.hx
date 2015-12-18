@@ -7,34 +7,42 @@ import sys.FileSystem;
 
 using StringTools;
 
-@:enum abstract TextStyle(Int){
-    var Normal = 0;
-    var SubScript = 1;
-    var SuperScript = 2;
-    var URL = 5;
-    var Head1 = 10;
-    var Head2 = 20;
-    var Head3 = 30;
-    var Head4 = 40;
-    var Head5 = 50;
-    var Head6 = 60;
-    var UnderScore = 100;
-    var Italic = 200;
-    var Bold = 400;
-    var Emphasized = 1000;
-}
 
 typedef CommandDef = {
+    name: String,
     description:String,
     nArgs:Int,
     matchPattern:EReg
 }
+
 
 typedef SourceText = {
     filename: String,
     line:Int,
     textContent:String
 }
+
+enum TextChunkType {
+    InLineMath;
+    InLineCode;
+    AlphaNumeric;
+    ReplacementCommand;//(name:String, arg:String)
+}
+
+enum TextChunkEmphasis {
+    None;
+    FirstLevel;
+    SecondLevel;
+}
+
+typedef TextChunk = {
+    type:TextChunkType,
+    emph:TextChunkEmphasis,
+    hili:Bool, // short for highlighted
+    text:String
+}
+
+typedef DisplayedText = Array<TextChunk>
 
 typedef VBlock = Array <SourceText> //for Vertical Block
 
@@ -47,21 +55,38 @@ enum ImageSize {
 
 typedef FigureContents = {
     path:String,
-    aternateText:String,
     size:ImageSize,
     caption:Null<String>
 }
 
-typedef TableColumn = Array<String>
+typedef TableCell = Array<String>
 typedef TableLine = Array<TableColumn>
 
+typedef BECA = {  //standing for BookElementsCommonAttributes
+    name: Null<String>,
+    label: Null<String>,
+    source: Null<VBlock>,
+    hasNum: Bool
+}
+
+enum VBlockType {
+    DivHeader(level:Int);
+    BoxHeader;
+    BoxClosing;
+    IgnoreBlockHeader;
+    CodeBlockHeader;
+    Element;
+}
+
 enum BookElement {
-    Div(name:Null<String>, isNumbered:Bool, content:Array<BookElement>);
-    Box(name:Null<String>, isNumbered:Bool, content:Array<BookElement>);
-    Figure(name:Null<String>, isNumbered:Bool, content:FigureContents);
-    Table(name:Null<String>, isNumbered:Bool, content:Array<TableLine>);
-    Equation(name:Null<String>, isNumbered:Bool, content:Array<SourceText>);
-    Text(name:Null<String>,  content:Array<SourceText>);
+    Div(beca:BECA,  content:Array<BookElement>);
+    Box(beca:BECA, content:Array<BookElement>);
+    Figure(beca:BECA, content:FigureContents);
+//    Table(beca:BECA, content:Array<TableLine>);
+//    Equation(beca:BECA, content:Array<SourceText>);
+    Text(beca:BECA, content:DisplayedText);
+//    List(beca:BECA, content:DisplayedText)
+//    CodeBlock(beca:BECA);
 }
 
 class Brtparse
@@ -83,14 +108,45 @@ class Brtparse
         var vBlocks = ParseIntoVBlocks (Sys.args()[0]);
         trace ('Done spliting file in vertical blocks. It has ${vBlocks.length} vBlocks.');
 //        promptTestParsedParagraphs(vBlocks,Sys.args()[1]);
-        var book = createBookDiv ("BRTPG", 0, false, vBlocks);
+        var book = createBookDiv ({"BRTPG","brtpg", 0, false, vBlocks);
    }
 
-    public static function createBookDiv (name:Null<String>, level:Int, isNumbered:Bool, isBox:Bool, vBlocks:Array<VBlock>):BookElement
+    public static function createBookDiv (beca: BECA, level:Int, isBox:Bool, vBlocks:Array<VBlock>):BookElement
     {
+        if (label==null) label=Label
+        var beca:BECA = { 
         var content:Array<BookElements>=[];
         while (vBlocks.length>0) {
-            var vBlock = vBlocks.shift()
+            vBlock =  vBlocks.shift();
+            switch getVBlockType(vBlock) {
+                case DivHeader(lv):
+                    if (isBox) error ('create division inside box ${beca.name} is not allowed. \n ${displayBlockInfo(vBlock)}');
+                    if (lv<=level) {
+                        vBlocks.unshift(vBlock);
+                        if (content.length == 0) error('div ${beca.name} has no content.  ${displayBlockInfo(beca.source)}');
+                        return Div(beca,content)
+                    } 
+                    if (lv==level+1) {
+                        createBookDiv (parseDivHeader(vBlock), lv, false, vBlocks);
+                    }
+                    if (lv>level+1) error ('creating div level $lv direct bellow div level $level - ${beca.name}
+                                            is not allowed. \n ${displayBlockInfo(vBlock)}');
+                case BoxHeader:
+                    if (isBox) error ('creating box inside box ${beca.name} is not allowed.  ${displayBlockInfo(vBlock)}');
+                case BoxClosing:
+                    if (content.length == 0) error('box ${beca.name} has no content. ${displayBlockInfo(beca.source)}');
+                    return Box(beca,content)
+                case IgnoreBlockHeader:
+                    getCodeBlockEnd(vBlock, vBlocks);
+                case CodeBlockHeader:
+                    content.push getCodeBlockEnd(vBlock, vBlocks);
+                case Element:
+                    content.push parseElement(vBlock);
+
+ 
+            }
+
+
             if (vBlock[0].textContent.startsWith() == "#" ){
                 if (isBox) {
                     trace ('try to add div inside block $name \n $displayBlockInfo(vBlock)' );
@@ -102,7 +158,7 @@ class Brtparse
             
             } 
             if (!vBlock[0].textContent.startsWith() == "[[[" ) {
-            
+            switch
             
             }    
                 if (!eltoDiv(myself, {null,vBlock} )) {
@@ -137,15 +193,6 @@ class Brtparse
             }
         } 
 
-    }
-    public static function eltoDiv(div:BookElement,bel:BookElement):Bool {
-        switch div{
-            case BookDiv(_,cont):
-                content.push(bel);
-                return true;
-            default:
-                return false;
-        }
     }
 
     // A Vertical Block (VBlock) is text between aparently empty lines (only tabs spaces and CharCodes between 9 and 13)
