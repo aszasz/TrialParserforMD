@@ -98,6 +98,39 @@ enum BookElement {
 
 class Brtparse
 {
+    static var startCodeBlockCommand = {description:"Suspend file parsing", nArgs:1,
+                             matchPattern:~/^\s+\\start\-code\-block\{(.+)\}\s+\/\//i};
+
+    static var endCodeBlockCommand = {description:"Resume file parsing", nArgs:1,
+                                 matchPattern:~/^\s+\\end\-code\-block\{(.+)\}\s+\/\//i};
+
+    static var switchCodeBlockMarkdown = {description:"Suspend/Resume file markdown and command processing", nArgs:0, 
+                                  matchPattern:~/^\s+```}\s+\/\//i};
+    
+    static var startIgnoreBlockCommand = {description:"Suspend file output", nArgs:1,
+                                   matchPattern:~/^\s+\\start\-ignore\-block\{(.+)\}\s+\/\//i};
+    
+    static var endIgnoreBlockCommand = {description:"Resume file output", nArgs:1,
+                                   matchPattern:~/^\s+\\end\-ignore\-block\{(.+)\}\s+\/\//i};
+    
+    static var startCommentBlockMarkdown = {description:"Start comment about source, suspend output", nArgs:1,
+                                 matchPattern:~/^\s+\/\*\s+/i};
+
+    static var endCommentBlockMarkdown = {description:"end comment about source, resume output", nArgs:1,
+                                 matchPattern:~/^\s+\*\/\s+/i};
+
+    static var suspendCommands:Array<CommandDefs> = [ startCodeBlockCommand, 
+                                                      endCodeBlockCommand,
+                                                      switchCodeBlockMarkdown, 
+                                                      startIgnoreBlockCommand                          
+                                                      endIgnoreBlockCommand 
+                                                      startCommentBlockMarkdown,
+                                                      endCommentBlockMarkdown 
+                                                     ]
+    static var pipeinCommand = {description:"Switch to a new parsing file", nArgs:1,
+                                     matchPattern:~/^\s+\\pipe-in\{(.+)\}\s+\/\//i};
+
+
    static function main()
    {
         haxe.Log.trace = function (msg:String, ?pos:haxe.PosInfos)
@@ -211,10 +244,10 @@ class Brtparse
     }
 
     // A Vertical Block (VBlock) is text between aparently empty lines (only tabs spaces and CharCodes between 9 and 13)
-    // Lines starting with % are ignored 
+
     public static function ParseIntoVBlocks(filePath:String):Array<VBlock>
     {
-        var pipeinCommand = {description:"Change Input to given file", nArgs:1, matchPattern:~/^\\pipein\{(.+)\}$/i};
+       
         var filePathSplit = filePath.split("/");
         var fileName = filePathSplit.pop();
         var fileDir = filePathSplit.join("/");
@@ -224,10 +257,10 @@ class Brtparse
         var lines = noCrlines.split("\n");
         var count = 0;
         var bookBlocks:Array<VBlock> = [];
-        var curVBlock:VBlock = []; 
+        var curVBlock:VBlock = [];
+        var suspend = false //to prevent execution of pipe-in
         for (li in lines){
             count = count+1;
-            if (li.startsWith("%")) continue;
             if (looksBlank(li)){
                 if (curVBlock.length>0){
                     bookBlocks.push (curVBlock);
@@ -237,22 +270,19 @@ class Brtparse
                 if (curVBlock.length>0) {
                     curVBlock[curVBlock.length-1].textContent =  curVBlock[curVBlock.length-1].textContent + " ";
                 }
-                if (!li.startsWith("\\pipein")) {
+
+                if (!li.startsWith("\\pipei-in") or suspend) {
                     curVBlock.push({filename:fileName, line:count, textContent:li});
                 } else {
                     var pipeInFileName:String = "";
                     if (pipeinCommand.matchPattern.match(li.trim())) 
                         pipeInFileName = pipeinCommand.matchPattern.matched(1);
-                    else {
-                        trace ('argument to \\pipein do not match in line $count of file $fileName\n -->$li' );
-                        Sys.exit(1);
-                    }
+                    else 
+                         error('argument to \\pipein do not match in line $count of file $fileName\n -->$li' );
                     var prevWorkDir = Sys.getCwd();
                     if (fileDir != "") Sys.setCwd(fileDir);
-                    if (!FileSystem.exists(pipeInFileName)){
-                        trace ('file to \\pipein not found: $pipeInFileName (in line $count of file $fileName)' );
-                        Sys.exit(1);
-                    }
+                    if (!FileSystem.exists(pipeInFileName)) error ('file to \\pipein not found: $pipeInFileName
+                                                                              (in line $count of file $fileName)' );
                     trace ('Piping: $pipeInFileName (from line $count of file $fileName)' );
                     var fileBlocks = ParseIntoVBlocks(pipeInFileName);
                     if (curVBlock.length>0 && fileBlocks.length>0) {
@@ -276,7 +306,13 @@ class Brtparse
             if (!line.isSpace(charpos)) return false;
         return true;
     }
-    
+
+
+    static function canpipein(vBlock:VBlock):Bool{
+
+     
+    }
+
     static function displayUsageAndExit(?exitStatus=1){
         trace(' Use: neko brtparse.n inputfilename outputfilename');
         Sys.exit(exitStatus);
@@ -308,5 +344,7 @@ class Brtparse
         }
         return ('\n from $fileName lines: $firstline - $lastline --> $vbContent');
     }
+
+
 
 }
